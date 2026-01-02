@@ -49,5 +49,9 @@ dependencies {
     implementation("io.reactivex.rxjava2:rxjava:2.2.21")
     // ✅ 添加 Room-RxJava2 适配器
     implementation("androidx.room:room-rxjava2:2.6.1") // 版本号与 room-runtime 保持一致
+    // ✅ 添加这一行：RxAndroid
+    implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
+    // ✅ 降回旧版本
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.0")
 
 }
