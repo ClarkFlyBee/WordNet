@@ -45,5 +45,9 @@ dependencies {
     val roomVersion = "2.6.1"  // 使用稳定版本
     implementation("androidx.room:room-runtime:$roomVersion")
     annotationProcessor("androidx.room:room-compiler:$roomVersion")
+    // ✅ 添加 RxJava2 依赖（用于 DAO 中的 Single）
+    implementation("io.reactivex.rxjava2:rxjava:2.2.21")
+    // ✅ 添加 Room-RxJava2 适配器
+    implementation("androidx.room:room-rxjava2:2.6.1") // 版本号与 room-runtime 保持一致
 
 }
