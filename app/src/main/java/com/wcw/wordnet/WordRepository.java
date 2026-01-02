@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import java.util.List;
 
 import io.reactivex.Completable;    // 异步操作完成状态
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -73,6 +74,14 @@ public class WordRepository {
     }
 
     /**
+     * 获取单个单词
+     */
+    public Single<WordNode> getWordById(String word){
+        return wordDao.getWordById(word)
+                .subscribeOn(Schedulers.io());
+    }
+
+    /**
      * 获取薄弱词（记忆强度最低的10个）
      * @return LiveData包装的薄弱词列表
      */
@@ -85,8 +94,8 @@ public class WordRepository {
      * @param root 词根，如"struct"、"re"
      * @return 包含该词根的单词列表LiveData
      */
-    public LiveData<List<WordNode>> getWordByRoot(String root) {
-        return wordDao.getWordByRoot(root);
+    public LiveData<List<WordNode>> getWordsByRoot(String root) {
+        return wordDao.getWordsByRoot(root);
     }
 
     /**

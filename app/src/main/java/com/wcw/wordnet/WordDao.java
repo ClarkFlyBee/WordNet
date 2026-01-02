@@ -83,7 +83,7 @@ public interface WordDao {
             "FROM word_nodes " +
             "WHERE morphemeList " +
             "LIKE '%' || :root || '%' AND isActive=1")  // ‘||’ 是SQLite的字符串连接符
-    LiveData<List<WordNode>> getWordByRoot(String root);
+    LiveData<List<WordNode>> getWordsByRoot(String root);
 
     /**
      * 统计词根学习情况
