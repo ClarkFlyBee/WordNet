@@ -1,6 +1,8 @@
 package com.wcw.wordnet;
 
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -162,11 +164,31 @@ public class WordNode {
      * 更新记忆强度
      */
     public void updateMemoryStrength(boolean isCorrect){
-        reviewCount++;
-        float score = isCorrect ? 0.3f : -0.1f;
-        memoryStrength = memoryStrength * 0.7f + score * 0.3f;
-        // 边界保护
-        memoryStrength = Math.max(0.0f, Math.min(1.0f, memoryStrength));
+        int newCount = this.reviewCount + 1;
+
+        // 1. 基础得分：答对+0.3，答错-0.1
+        float baseFain = isCorrect ? 0.3f : -0.1f;
+
+        // 2. 复习次数增益：前3次复习得分翻倍（快速度过短期记忆）
+        float constMultiplier= newCount <= 3 ? 1.5f : 1.0f;
+
+        // 3. 难度系数：强度越高，得分衰减（后期更难提升）
+        float difficulty = 1.0f - (this.memoryStrength * 0.5f);
+
+        // 4. 综合计算
+        float finalGain = baseFain * constMultiplier * difficulty;
+
+        // 5. 边界保护
+        this.memoryStrength = Math.max(0.0f, Math.min(1.0f, this.memoryStrength + finalGain));
+
+        // 6. 更新元数据
+        this.reviewCount = newCount;
+        this.lastReviewed = System.currentTimeMillis();
+
+        // 7. 日志
+        Log.d("DebugStrength", "单词:" + this.word + ", 结果:" + isCorrect +
+                ", 旧强度:" + (this.memoryStrength - finalGain) +
+                ", 新强度:" + this.memoryStrength);
     }
 
     @NonNull
