@@ -1,6 +1,7 @@
 package com.wcw.wordnet;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -36,6 +37,14 @@ public class MainActivity extends AppCompatActivity {
         // 2. 初始化 ViewModel（生命周期感知）
         viewModel = new ViewModelProvider(this).get(WordGraphViewModel.class);
 
+        // TEST
+        viewModel.getWeakWords().observe(this, words -> {
+            Log.d("DebugRefresh", "Observer被触发! words=" + (words != null ? words.size() : "null"));
+            if (words != null && !words.isEmpty()) {
+                Log.d("DebugRefresh", "第一个单词: " + words.get(0).getWord());
+            }
+        });
+
         // 3. 初始化 RecyclerView
         setupRecyclerView();
 
@@ -62,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void observeViewModel() {
         // 1. 观察薄弱词列表
-        viewModel.getWeakwords().observe(this, words -> {
+        viewModel.getWeakWords().observe(this, words -> {
             if (words == null || words.isEmpty()) {
                 showEmptyState();   // 显示暂无单词
             } else {
@@ -118,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
         // 1. 添加单词按钮
         binding.btnAddWord.setOnClickListener(v -> {
             String word = binding.etWord.getText().toString().trim();
-            viewModel.addword(word);    // 转发给ViewModel
+            viewModel.addWord(word);    // 转发给ViewModel
         });
 
         // 2. 根据词根搜索按钮
@@ -136,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // 4. 复习“答错”按钮
-        binding.btnReviewCorrect.setOnClickListener(v->{
+        binding.btnReviewWrong.setOnClickListener(v->{
             WordNode current = adapter.getCurrentWord();
             if (current != null) {
                 viewModel.reviewWord(current.getWord(),  false);

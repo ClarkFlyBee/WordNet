@@ -29,7 +29,7 @@ public class WordGraphViewModel extends AndroidViewModel {
      * 薄弱词列表（记忆强度最低的10个）
      * Activity通过observe()订阅，数据变化自动刷新UI
      */
-    private final LiveData<List<WordNode>> weakwords;
+    private final LiveData<List<WordNode>> weakWords;
 
     /**
      * 单词总数（可见的）
@@ -102,7 +102,7 @@ public class WordGraphViewModel extends AndroidViewModel {
                 });
 
         // 从 Repository 获取 LiveData（连接数据源）
-        this.weakwords = repository.getWeakWords();
+        this.weakWords = repository.getWeakWords();
         this.wordCount = repository.getWordCount();
         this.masteredWordCount = repository.getMasteredWordCount();
 
@@ -117,7 +117,7 @@ public class WordGraphViewModel extends AndroidViewModel {
      * 流程：校验→插入→通知UI
      * @param word 用户输入的单词字符串
      */
-    public void addword(String word){
+    public void addWord(String word){
         // 1. 输入校验（主线程，快速操作）
         if (word == null || word.trim().isEmpty()){
             errorMessage.setValue("单词不能为空");
@@ -224,8 +224,8 @@ public class WordGraphViewModel extends AndroidViewModel {
         return wordCount;
     }
 
-    public LiveData<List<WordNode>> getWeakwords() {
-        return weakwords;
+    public LiveData<List<WordNode>> getWeakWords() {
+        return weakWords;
     }
 
     public LiveData<Integer> getMasteredWordCount() {
