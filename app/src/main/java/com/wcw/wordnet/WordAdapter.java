@@ -1,6 +1,8 @@
 package com.wcw.wordnet;
 
 
+import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,7 +41,7 @@ public class WordAdapter extends ListAdapter<WordNode, WordAdapter.WordViewHolde
             };
 
     // 当前正在复习的单词（用于 btn_review_correct / wrong）
-    private WordNode currentWord;
+    private WordNode selectedWord;
 
     public WordAdapter() {
         super(DIFF_CALLBACK);
@@ -55,11 +57,25 @@ public class WordAdapter extends ListAdapter<WordNode, WordAdapter.WordViewHolde
     @Override
     public void onBindViewHolder(@NonNull WordViewHolder holder, int position) {
         WordNode word = getItem(position);
+
+        // 1. 绑定数据
         holder.bind(word);
 
-        // 点击项时设置当前复习单词
+        // 2. 设置选中状态
+        if (selectedWord != null && selectedWord.getWord().equals(word.getWord())) {
+            // 选中态：绿色边框
+            holder.itemView.setBackgroundResource(R.drawable.item_selected_background);
+        } else {
+            // 非选中态
+            holder.itemView.setBackground(null);
+            holder.setColorsByStrength(word.getMemoryStrength());
+        }
+
+        // 3. 点击监听
         holder.itemView.setOnClickListener(v -> {
-            currentWord = word;
+            selectedWord = word;
+            notifyDataSetChanged();
+            Log.d("DebugSelect", "用户选中: " + word.getWord());
         });
     }
 
@@ -68,7 +84,7 @@ public class WordAdapter extends ListAdapter<WordNode, WordAdapter.WordViewHolde
      * @return WordNode or null
      */
     public WordNode getCurrentWord(){
-        return currentWord;
+        return selectedWord;
     }
 
     // ViewHolder
@@ -107,14 +123,49 @@ public class WordAdapter extends ListAdapter<WordNode, WordAdapter.WordViewHolde
                     .replace(",", " + ");
         }
 
+        /**
+         * 根据记忆强度获取背景色
+         * @param strength 0.0-1.0
+         * @return ARGB颜色值
+         */
         private int getColorByStrength(float strength) {
-            // 0.0=红色，1.0=绿色，中间渐变
-            int red = (int)(255 * (1 - strength));
-            int green = (int)(255 * strength);
-            int blue = 0;
-            return 0xFF000000 | (red << 16) | (green << 8) | blue;  // ARGB格式
+            float[] hsv = new float[3];
+            hsv[0] = 120 * strength;            // 色相：0 = 红，120 = 绿
+            hsv[1] = 0.2f + strength * 0.3f;    // 饱和度：0.2 ~ 0.5（柔和）
+            hsv[2] = 0.95f;                     // 明度
+            return Color.HSVToColor(hsv);
         }
 
+        /**
+         * 根据背景色计算可读性最强的文字颜色
+         * 使用 W3C 标准亮度公式：L = 0.299*R + 0.587*G + 0.114*B
+         * @param backgroundColor 背景色（ARGB）
+         * @return 黑色或白色文字颜色
+         */
+        private int getContrastTextColor(int backgroundColor) {
+            // 1. 提取 RGB 分量（ARGB 格式：AARRGGBB）
+            int red = Color.red(backgroundColor);
+            int green = Color.green(backgroundColor);
+            int blue = Color.blue(backgroundColor);
+
+            // 2. 计算感知亮度（0-255）
+            double luminance = 0.299 * red + 0.587 * green + 0.114 * blue;
+
+            // 3. 阈值128（中点），亮度>=128用黑色，<128用白色
+            return luminance >= 128 ? Color.BLACK : Color.WHITE;
+        }
+
+        public void setColorsByStrength(float strength) {
+            // 1. 背景色
+            int backgroundColor = getColorByStrength(strength);
+            itemView.setBackgroundColor(backgroundColor);
+
+            // 2. 强制设置所有 TextView 的文字颜色（覆盖复用残留）
+            int textColor = getContrastTextColor(backgroundColor);
+            tvWord.setTextColor(textColor);
+            tvMorphemes.setTextColor(textColor);  // 确保这行执行
+            tvStrength.setTextColor(textColor);   // 确保这行执行
+        }
     }
 
 }
