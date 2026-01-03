@@ -203,12 +203,21 @@ public class WordGraphViewModel extends AndroidViewModel {
         );
     }
 
+
     /**
-     * 很据词根搜索单词
-     * @param root
+     * 触发搜索：设置搜索条件
+     * @param root 词根字符串
      */
     public void searchByRoot(String root) {
-        rootQuery.setValue(root);   // 触发 switchMap
+        rootQuery.setValue(root);   // 触发 swtichMap 自动查询
+    }
+
+    /**
+     * 获取搜索结果：供 Activity 观察
+     * @return LiveData<List<WordNode> 搜索结果（无需参数）
+     */
+    public LiveData<List<WordNode>> getWordsByRoot() {
+        return wordsByRoot; // 返回 switchMap 生成的 LiveData
     }
 
     public LiveData<Integer> getWordCount() {
