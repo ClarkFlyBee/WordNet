@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 /**
@@ -62,6 +63,7 @@ public class WordNode {
         this.morphemeList = "[]";
     }
 
+    @Ignore
     public WordNode(
             @NonNull String word,
             float memoryStrength,
@@ -81,6 +83,7 @@ public class WordNode {
     /**
      * 用于创建单词，其他属性均赋予默认值
      */
+    @Ignore
     public WordNode(@NonNull String word) {
         this.word = word;
         this.memoryStrength = 0.0f;

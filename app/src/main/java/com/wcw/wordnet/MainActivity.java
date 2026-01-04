@@ -85,11 +85,24 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // 3. 观察已掌握单词数
-        viewModel.getMasteredWordCount().observe(this, count -> {
-            if (count != null) {
-                binding.pbMastery.setProgress(count);   // 更新进度条
-            }
+        viewModel.getWordCount().observe(this, totalCount -> {
+            viewModel.getMasteredWordCount().observe(this, masteredCount -> {
+                if (totalCount != null && totalCount > 0 && masteredCount != null) {
+                    // 计算百分比
+                    int percentage = (int) ((masteredCount * 100.0f) / totalCount);
+                    binding.pbMastery.setProgress(percentage);
+                    binding.tvMasteryText.setText("掌握进度" +  percentage + "% (" + masteredCount + "/" + totalCount + ")");
+                } else {
+                    binding.pbMastery.setProgress(0);
+                    binding.tvMasteryText.setText("掌握进度" +  "0% (0/0)");
+                }
+            });
         });
+//        viewModel.getMasteredWordCount().observe(this, count -> {
+//            if (count != null) {
+//                binding.pbMastery.setProgress(count);   // 更新进度条
+//            }
+//        });
 
         // 4. 观察搜索结果
         viewModel.getWordsByRoot().observe(this, words -> {

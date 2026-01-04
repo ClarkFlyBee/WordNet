@@ -1,11 +1,13 @@
 package com.wcw.wordnet;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.util.concurrent.Executor;
@@ -84,10 +86,31 @@ public abstract class AppDatabase extends RoomDatabase {
             databaseWriteExecutor.execute(() -> {
                 // 获取DAO实例
                 WordDao dao = INSTANCE.wordDao();
-                // 预填充示例单词
-                WordNode sample = new WordNode("reconstruction");
-                sample.setMorphemeList("[\"re\",\"struct\",\"tion\"]");
-                dao.insert(sample);
+
+                // 插入6个示范单词
+                WordNode[] defaultWords = {
+                        new WordNode("reconstruction"),
+                        new WordNode("unpredictability"),
+                        new WordNode("structure"),
+                        new WordNode("dictionary"),
+                        new WordNode("preview"),
+                        new WordNode("construction")
+                };
+
+                // 设置词根
+                defaultWords[0].setMorphemeList("[\"re\",\"struct\",\"tion\"]");
+                defaultWords[1].setMorphemeList("[\"un\",\"pre\",\"dict\",\"ability\"]");
+                defaultWords[2].setMorphemeList("[\"struct\",\"ure\"]");
+                defaultWords[3].setMorphemeList("[\"dict\",\"ion\",\"ary\"]");
+                defaultWords[4].setMorphemeList("[\"pre\",\"view\"]");
+                defaultWords[5].setMorphemeList("[\"con\",\"struct\",\"tion\"]");
+
+                // 插入数据库
+                for (WordNode word : defaultWords) {
+                    dao.insert(word);
+                }
+
+                Log.d("AppDatabase", "默认数据插入完成");
             });
         }
 
