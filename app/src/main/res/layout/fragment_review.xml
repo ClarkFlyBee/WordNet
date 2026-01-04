@@ -224,6 +224,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="📋 查看单词"
+                android:visibility="visible"
                 android:textSize="14sp"
                 android:layout_marginEnd="8dp"
                 app:cornerRadius="12dp"
@@ -239,12 +240,23 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="➕ 添加新词"
+                android:visibility="visible"
                 android:textSize="14sp"
                 app:cornerRadius="12dp"
                 android:backgroundTint="@android:color/holo_blue_dark"
                 android:textColor="@android:color/white"/>
-
         </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_reset_for_testing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔄 再来一轮（测试）"
+            android:textSize="14sp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            android:backgroundTint="@android:color/holo_orange_dark"
+            android:textColor="@android:color/white"/>
+
 
     </LinearLayout>
 

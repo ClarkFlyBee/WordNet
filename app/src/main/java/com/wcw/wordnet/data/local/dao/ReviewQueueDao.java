@@ -94,4 +94,11 @@ public interface ReviewQueueDao {
     @Query("SELECT * FROM review_queue ORDER BY next_review_time ASC")
     LiveData<List<ReviewQueue>> getAllReviewQueues();
 
+
+    /**
+     * 同步查询所有复习项（调试用，生产环境可删除）
+     * ✅ 注意：返回直接的 List，不是 LiveData
+     */
+    @Query("SELECT * FROM review_queue ORDER BY next_review_time ASC")
+    List<ReviewQueue> getAllReviewQueuesSync();  // ✅ 新增：同步方法
 }

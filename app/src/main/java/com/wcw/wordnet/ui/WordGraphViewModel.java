@@ -9,12 +9,16 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
+import com.wcw.wordnet.data.local.dao.ReviewQueueDao;
+import com.wcw.wordnet.data.local.dao.WordDao;
 import com.wcw.wordnet.data.repository.WordRepository;
+import com.wcw.wordnet.model.entity.ReviewQueue;
 import com.wcw.wordnet.model.entity.WordNode;
 import com.wcw.wordnet.ui.review.ReviewState;
 
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -398,6 +402,28 @@ public class WordGraphViewModel extends AndroidViewModel {
     public LiveData<WordNode> getCurrentReviewWord() {
         return currentReviewWord;
     }
+
+    /**
+     * ✅ 供 Fragment 调用的同步重置方法（调试用）
+     * 重置所有单词的复习时间为"现在"
+     */
+    // 相关方法没有完整实现，本部分对应功能见 Fragment
+//    public Completable resetReviewQueueForTesting() {
+//        return Completable.fromAction(() -> {
+//            // 获取DAO（通过Repository或直接通过Database）
+//            ReviewQueueDao queueDao = repository.getReviewQueueDao();  // 需要Repository提供get方法
+//            WordDao wordDao = repository.getWordDao();  // 需要Repository提供get方法
+//
+//            // 获取所有复习项
+//            List<ReviewQueue> allItems = queueDao.getAllReviewQueuesSync();
+//
+//            // 重置时间为现在
+//            for (ReviewQueue item : allItems) {
+//                item.setNextReviewTime(System.currentTimeMillis());
+//                queueDao.updateReviewQueue(item);
+//            }
+//        }).subscribeOn(Schedulers.io());
+//    }
 
     /**
      * ViewModel 销毁时调用（系统自动）

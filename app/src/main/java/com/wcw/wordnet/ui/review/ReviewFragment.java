@@ -1,6 +1,7 @@
 package com.wcw.wordnet.ui.review;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,9 +12,20 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.wcw.wordnet.BuildConfig;
+import com.wcw.wordnet.data.local.dao.ReviewQueueDao;
+import com.wcw.wordnet.data.local.database.AppDatabase;
 import com.wcw.wordnet.databinding.FragmentReviewBinding;
+import com.wcw.wordnet.model.entity.ReviewQueue;
 import com.wcw.wordnet.ui.WordGraphViewModel;
 import com.wcw.wordnet.ui.main.MainActivity;
+
+import java.util.List;
+
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * 复习Fragment（重构后）
@@ -28,6 +40,9 @@ public class ReviewFragment extends Fragment {
 
     // ✅ 新增：本轮复习计数器
     private int sessionReviewedCount = 0;
+
+    // ✅ 新增：临时CompositeDisposable用于测试
+    private final CompositeDisposable testDisposable = new CompositeDisposable();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,6 +67,12 @@ public class ReviewFragment extends Fragment {
 
         setupClickListeners();
         setupObservers();
+
+        // ✅ 开发环境：显示测试按钮
+        if (BuildConfig.DEBUG) {
+            binding.btnResetForTesting.setVisibility(View.VISIBLE);
+            binding.btnResetForTesting.setOnClickListener(v -> resetReviewQueueForTesting());
+        }
 
         // 开始复习会话
         viewModel.startReviewSession();
@@ -99,6 +120,19 @@ public class ReviewFragment extends Fragment {
             binding.evaluateView.setVisibility(state == ReviewState.EVALUATING ? View.VISIBLE : View.GONE);
             binding.scoreButtons.setVisibility(state == ReviewState.EVALUATING ? View.VISIBLE : View.GONE);
             binding.completedView.setVisibility(state == ReviewState.COMPLETED ? View.VISIBLE : View.GONE);
+
+            // ✅ 特别注意：完成状态时，确保按钮一定可见
+            if (state == ReviewState.COMPLETED) {
+                // 强制显示按钮（防止被之前的逻辑隐藏）
+                binding.btnViewWords.setVisibility(View.VISIBLE);
+                binding.btnAddNewWord.setVisibility(View.VISIBLE);
+
+                // 开发环境：显示测试按钮
+                if (BuildConfig.DEBUG) {
+                    Log.d("DEBUG_WCW", "现在是调试状态");
+                    binding.btnResetForTesting.setVisibility(View.VISIBLE);
+                }
+            }
 
             // 状态切换动画（可选）
             if (state == ReviewState.RECALLING) {
@@ -182,6 +216,49 @@ public class ReviewFragment extends Fragment {
                 .replace("]", "")
                 .replace("\"", "")
                 .replace(",", " + ");
+    }
+
+    /**
+     * ✅ 测试专用：重置所有单词的复习时间为"现在"
+     */
+    private void resetReviewQueueForTesting() {
+        // 显示加载提示
+        Toast.makeText(getContext(), "重置中...", Toast.LENGTH_SHORT).show();
+
+        testDisposable.add(
+                Completable.fromAction(() -> {
+                            // 1. 获取 DAO（通过 Database 单例）
+                            AppDatabase db = AppDatabase.getDatabase(requireContext());
+                            ReviewQueueDao queueDao = db.reviewQueueDao();
+
+                            // 2. 获取所有复习项（同步查询）
+                            List<ReviewQueue> allItems = queueDao.getAllReviewQueuesSync();
+
+                            // 3. 重置所有时间为现在
+                            for (ReviewQueue item : allItems) {
+                                item.setNextReviewTime(System.currentTimeMillis());
+                                queueDao.updateReviewQueue(item);
+                            }
+
+                            Log.d("ReviewFragment", "✅ 重置完成，共 " + allItems.size() + " 个单词");
+                        })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> {
+                                    // 成功：重新开始复习会话
+                                    Toast.makeText(getContext(), "✅ 已重置，开始新一轮复习", Toast.LENGTH_SHORT).show();
+                                    sessionReviewedCount = 0;  // 重置计数器
+                                    binding.tvCompletionStats.setText("本次复习了 0 个单词");  // 重置统计
+                                    viewModel.startReviewSession();  // 重新开始
+                                },
+                                throwable -> {
+                                    // 失败：显示错误
+                                    Toast.makeText(getContext(), "重置失败：" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Log.e("ReviewFragment", "重置失败", throwable);
+                                }
+                        )
+        );
     }
 
     @Override
