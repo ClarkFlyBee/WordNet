@@ -17,6 +17,7 @@ import com.wcw.wordnet.data.local.dao.ReviewQueueDao;
 import com.wcw.wordnet.data.local.database.AppDatabase;
 import com.wcw.wordnet.databinding.FragmentReviewBinding;
 import com.wcw.wordnet.model.entity.ReviewQueue;
+import com.wcw.wordnet.model.entity.WordNode;
 import com.wcw.wordnet.ui.WordGraphViewModel;
 import com.wcw.wordnet.ui.main.MainActivity;
 
@@ -44,6 +45,10 @@ public class ReviewFragment extends Fragment {
     // ✅ 新增：临时CompositeDisposable用于测试
     private final CompositeDisposable testDisposable = new CompositeDisposable();
 
+    // ✅ 新增：统计变量
+    private int sessionNewMasteredCount = 0;  // 本轮新掌握数量
+    private int sessionTotalScore = 0;        // 本轮总分（用于平均评分）
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +69,9 @@ public class ReviewFragment extends Fragment {
 
         // ✅ 在每次会话开始时重置计数器
         sessionReviewedCount = 0;  // 重置为0
+        sessionNewMasteredCount = 0;
+        sessionTotalScore = 0;
+        updateCompletionStats();  // 重置文本为"本次复习了 0 个单词"
 
         setupClickListeners();
         setupObservers();
@@ -178,11 +186,19 @@ public class ReviewFragment extends Fragment {
     private void submitReview(int quality) {
 
         sessionReviewedCount++;  // 每次提交+1
-
-        // 更新统计文本
-        binding.tvCompletionStats.setText(
-                String.format("本次复习了 %d 个单词", sessionReviewedCount)
-        );
+        sessionTotalScore += quality;  // 累加总分
+        // ✅ 判断是否新掌握（强度从<0.8提升到>=0.8）
+        WordNode currentWord = viewModel.getCurrentReviewWord().getValue();
+        if (currentWord != null && quality >= 4) {
+            float oldStrength = currentWord.getMemoryStrength();
+            // 预估新强度（简化计算）
+            float estimatedNewStrength = Math.min(1.0f, oldStrength + 0.15f);
+            if (oldStrength < 0.8f && estimatedNewStrength >= 0.8f) {
+                sessionNewMasteredCount++;
+            }
+        }
+        // 更新完成页面的统计
+        updateCompletionStats();
 
         // 显示反馈Toast
         String feedback = getFeedbackText(quality);
@@ -190,6 +206,19 @@ public class ReviewFragment extends Fragment {
 
         // 提交到ViewModel
         viewModel.submitReview(quality);
+    }
+
+    /**
+     * ✅ 更新完成页面的统计文本
+     */
+    private void updateCompletionStats() {
+        if (sessionReviewedCount > 0) {
+            float avgScore = (float) sessionTotalScore / sessionReviewedCount;
+            binding.tvCompletionStats.setText(
+                    String.format("本次复习了 %d 个单词 | 新掌握 %d 个 | 平均评分 %.1f",
+                            sessionReviewedCount, sessionNewMasteredCount, avgScore)
+            );
+        }
     }
 
     /**

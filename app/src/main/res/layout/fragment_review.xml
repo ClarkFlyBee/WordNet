@@ -208,7 +208,9 @@
             android:text="本次复习了 0 个单词"
             android:textSize="16sp"
             android:textColor="@android:color/darker_gray"
-            android:layout_marginBottom="48dp"/>
+            android:layout_marginBottom="32dp"
+            android:maxLines="2"
+            android:gravity="center"/>  <!-- ✅ 居中对齐 -->
 
         <!-- 操作按钮行 -->
         <LinearLayout
