@@ -1,6 +1,7 @@
 package com.wcw.wordnet;
 
 import android.app.Application;
+import android.util.Log;
 import android.view.animation.Transformation;
 
 import androidx.annotation.NonNull;
@@ -218,6 +219,30 @@ public class WordGraphViewModel extends AndroidViewModel {
      */
     public LiveData<List<WordNode>> getWordsByRoot() {
         return wordsByRoot; // 返回 switchMap 生成的 LiveData
+    }
+
+    /**
+     * 更新单词（供 Fragment 调用）
+     * @param word 要更新的单词实体
+     */
+    public void updateWord(WordNode word) {
+        disposable.add(
+                repository.updateWord(word)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> Log.d("ViewModel", "单词更新成功: " + word.getWord()),
+                                throwable -> errorMessage.setValue("更新失败: " + throwable.getMessage())
+                        )
+        );
+    }
+
+    /**
+     * 获取所有可见单词（供 WordsFragment 使用）
+     * @return 所有单词的 LiveData
+     */
+    public LiveData<List<WordNode>> getAllActiveWords() {
+        return repository.getAllActiveWords();  // 直接转发 Repository 的数据
     }
 
     public LiveData<Integer> getWordCount() {

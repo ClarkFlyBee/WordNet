@@ -7,6 +7,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.wcw.wordnet.databinding.ActivityMainBinding;
@@ -14,17 +17,18 @@ import com.wcw.wordnet.databinding.ActivityMainBinding;
 import java.util.List;
 
 /**
- * 主Activity
- * 展示数据、转发用户事件、管理生命周期
- * 遵循MVVM结构：不直接操作数据库，所有逻辑通过ViewModel
+ * 主Activity（重构后：纯导航容器）
+ * 职责：
+ * 1. 初始化导航控制器（NavController）
+ * 2. 连接底部导航栏（BottomNavigationView）与导航图
+ * 3. 提供共享的ViewModel（供三个Fragment使用）
+ *
+ * 旧逻辑已全部拆分到 ReviewFragment/WordsFragment/AddFragment
  */
-
 public class MainActivity extends AppCompatActivity {
 
-    private WordGraphViewModel viewModel;
-    private ActivityMainBinding binding;    // ViewBinding 替代传统的 findViewById
-    private WordAdapter adapter;
-
+    private ActivityMainBinding binding;
+    private WordGraphViewModel viewModel;  // 关键点：共享给所有Fragment
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,154 +38,39 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // 2. 初始化 ViewModel（生命周期感知）
+        // 2. 初始化共享的 ViewModel（Activity作用域）
+        // 关键点：所有 Fragment 通过 requireActivity() 获取同一个 ViewModel
         viewModel = new ViewModelProvider(this).get(WordGraphViewModel.class);
 
-        // TEST
-        viewModel.getWeakWords().observe(this, words -> {
-            Log.d("DebugRefresh", "Observer被触发! words=" + (words != null ? words.size() : "null"));
-            if (words != null && !words.isEmpty()) {
-                Log.d("DebugRefresh", "第一个单词: " + words.get(0).getWord());
-            }
-        });
-
-        // 3. 初始化 RecyclerView
-        setupRecyclerView();
-
-        // 4. 观察 LiveData（数据变化自动刷新UI）
-        observeViewModel();
-
-        // 5. 设置点击事件（转发给ViewModel）
-        setupClickListeners();
-    }
-
-    // UI初始化
-    /**
-     * 设置 RecyclerView 布局和适配器
-     */
-    private void setupRecyclerView() {
-        adapter = new WordAdapter();    // 创建适配器
-        binding.rvWords.setLayoutManager(new LinearLayoutManager(this));    // 垂直列表
-        binding.rvWords.setAdapter(adapter);    // 绑定适配器
-    }
-
-    // LiveData观察（数据驱动UI）
-    /**
-     * 观察ViewModel的所有LiveData
-     */
-    private void observeViewModel() {
-        // 1. 观察薄弱词列表
-        viewModel.getWeakWords().observe(this, words -> {
-            if (words == null || words.isEmpty()) {
-                showEmptyState();   // 显示暂无单词
-            } else {
-                showWordList(words);    // 显示单词列表
-            }
-        });
-
-        // 2. 观察单词总数
-        viewModel.getWordCount().observe(this, count -> {
-            binding.tvWordCount.setText("已经学习 " + (count != null ? count : 0) + " 个单词");
-        });
-
-        // 3. 观察已掌握单词数
-        viewModel.getWordCount().observe(this, totalCount -> {
-            viewModel.getMasteredWordCount().observe(this, masteredCount -> {
-                if (totalCount != null && totalCount > 0 && masteredCount != null) {
-                    // 计算百分比
-                    int percentage = (int) ((masteredCount * 100.0f) / totalCount);
-                    binding.pbMastery.setProgress(percentage);
-                    binding.tvMasteryText.setText("掌握进度" +  percentage + "% (" + masteredCount + "/" + totalCount + ")");
-                } else {
-                    binding.pbMastery.setProgress(0);
-                    binding.tvMasteryText.setText("掌握进度" +  "0% (0/0)");
-                }
-            });
-        });
-//        viewModel.getMasteredWordCount().observe(this, count -> {
-//            if (count != null) {
-//                binding.pbMastery.setProgress(count);   // 更新进度条
-//            }
-//        });
-
-        // 4. 观察搜索结果
-        viewModel.getWordsByRoot().observe(this, words -> {
-            if (words != null) {
-                adapter.submitList(words);    // 显示搜索结果
-            }
-        });
-
-        // 5. 观察错误消息（一次性事件）
-        viewModel.getErrorMessage().observe(this, message -> {
-            if (message != null) {
-                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // 6. 观察单词添加成功事件
-        viewModel.getWordAddedEvent().observe(this, aVoid -> {
-            // 清空输入框
-            binding.etWord.setText("");
-            Toast.makeText(MainActivity.this, "添加成功", Toast.LENGTH_SHORT).show();
-        });
-
-        // 7. 观察复习完成事件
-        viewModel.getWordReviewedEvent().observe(this, aVoid -> {
-            // 刷新列表（LiveData会自动更新，这里可以显示提示）
-            Toast.makeText(MainActivity.this, "复习记录已更新", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    // 点击事件
-    /**
-     * 设置所有按钮的点击事件
-     */
-    private void setupClickListeners() {
-        // 1. 添加单词按钮
-        binding.btnAddWord.setOnClickListener(v -> {
-            String word = binding.etWord.getText().toString().trim();
-            viewModel.addWord(word);    // 转发给ViewModel
-        });
-
-        // 2. 根据词根搜索按钮
-        binding.btnSearchRoot.setOnClickListener(v -> {
-            String root = binding.etSearchRoot.getText().toString().trim();  // 触发搜索
-            viewModel.searchByRoot(root);
-        });
-
-        // 3. 复习“答对”按钮
-        binding.btnReviewCorrect.setOnClickListener(v->{
-            WordNode current = adapter.getCurrentWord();
-            if (current != null) {
-                viewModel.reviewWord(current.getWord(),  true);
-            }
-        });
-
-        // 4. 复习“答错”按钮
-        binding.btnReviewWrong.setOnClickListener(v->{
-            WordNode current = adapter.getCurrentWord();
-            if (current != null) {
-                viewModel.reviewWord(current.getWord(),  false);
-            }
-        });
-    }
-
-    // UI 状态管理
-    /**
-     * 显示空状态（暂无单词）
-     */
-    private void showEmptyState() {
-        binding.rvWords.setVisibility(View.GONE);
-        binding.tvEmpty.setVisibility(View.VISIBLE);
+        // 3. 设置导航控制器
+        setupNavigation();
     }
 
     /**
-     * 显示单词列表
+     * 设置 Jetpack Navigation
+     * 连接 BottomNavigationView 与 NavGraph
      */
-    private void showWordList(List<WordNode> words) {
-        binding.rvWords.setVisibility(View.VISIBLE);
-        binding.tvEmpty.setVisibility(View.GONE);
-        adapter.submitList(words);  // DiffUtil 自动计算差异
+    private void setupNavigation() {
+        // 获取 NavHostFragment（托管所有 Fragment 的容器）
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
+
+        if (navHostFragment != null) {
+            // 获取 NavController（导航控制器）
+            NavController navController = navHostFragment.getNavController();
+
+            // 将 BottomNavigationView 与 NavController 绑定
+            // 点击底部Tab会自动切换Fragment，无需手动管理
+            NavigationUI.setupWithNavController(binding.bottomNav, navController);
+        }
+    }
+
+    /**
+     * 提供共享的 ViewModel（供Fragment调用）
+     * 示例：在 ReviewFragment 中通过 ((MainActivity)requireActivity()).getViewModel() 获取
+     */
+    public WordGraphViewModel getViewModel() {
+        return viewModel;
     }
 
 }

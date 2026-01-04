@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 复习 Tab -->
+    <item
+        android:id="@+id/reviewFragment"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="复习"/>
+
+    <!-- 单词 Tab -->
+    <item
+        android:id="@+id/wordsFragment"
+        android:icon="@android:drawable/ic_menu_sort_alphabetically"
+        android:title="单词"/>
+
+    <!-- 添加 Tab -->
+    <item
+        android:id="@+id/addFragment"
+        android:icon="@android:drawable/ic_input_add"
+        android:title="添加"/>
+
+</menu>

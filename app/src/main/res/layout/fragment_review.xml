@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- 顶部：当前复习单词 -->
+    <TextView
+        android:id="@+id/tv_current_word"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="reconstruction"
+        android:textSize="48sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="64dp"/>
+
+    <!-- 中部：词根提示 -->
+    <TextView
+        android:id="@+id/tv_word_morphemes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="词根: re + struct + tion"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_current_word"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <!-- 底部：三个评估按钮 -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/btn_forgot"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="不认识"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/holo_red_dark"/>
+
+        <Button
+            android:id="@+id/btn_hard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="模糊"
+            android:textColor="@android:color/black"
+            android:backgroundTint="@android:color/holo_orange_dark"/>
+
+        <Button
+            android:id="@+id/btn_easy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="认识"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/holo_green_dark"/>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

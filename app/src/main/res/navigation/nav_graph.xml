@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/reviewFragment">  <!--启动时显示的Fragment-->
+
+    <!-- 复习Fragment（启动页） -->
+    <fragment
+        android:id="@+id/reviewFragment"
+        android:name="com.wcw.wordnet.ReviewFragment"
+        android:label="复习"
+        tools:layout="@layout/fragment_review" />
+
+    <!-- 单词列表Fragment -->
+    <fragment
+        android:id="@+id/wordsFragment"
+        android:name="com.wcw.wordnet.WordsFragment"
+        android:label="单词"
+        tools:layout="@layout/fragment_words" />
+
+    <!-- 添加Fragment -->
+    <fragment
+        android:id="@+id/addFragment"
+        android:name="com.wcw.wordnet.AddFragment"
+        android:label="添加"
+        tools:layout="@layout/fragment_add" />
+
+</navigation>

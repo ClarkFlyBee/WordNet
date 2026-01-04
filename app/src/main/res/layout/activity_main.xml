@@ -7,175 +7,28 @@
     android:id="@+id/main"
     tools:context=".MainActivity">
 
-    <!--顶部：统计卡片-->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_stats"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:cardElevation="4dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/tv_word_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="已经学习 0 个单词"
-                android:textSize="18sp"
-                android:textStyle="bold"/>
-
-            <ProgressBar
-                android:id="@+id/pb_mastery"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:max="100"
-                android:progress="0"/>
-
-            <TextView
-                android:id="@+id/tv_mastery_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0% (0/0)"
-                android:textSize="12sp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- 中部：添加单词区域 -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_add"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/card_stats"
-        app:cardElevation="4dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_word"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="输入新单词"
-                android:inputType="text"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_add_word"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="添加"/>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- 中部：搜索词根 -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_search"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/card_add"
-        app:cardElevation="4dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_search_root"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="输入词根，如：struct"
-                android:inputType="text"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_search_root"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="搜索"/>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- 复习按钮（横向排列） -->
-    <LinearLayout
-        android:id="@+id/ll_review_buttons"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/card_search">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_review_correct"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="答对√"
-            android:textColor="@android:color/white"
-            android:backgroundTint="@android:color/holo_green_dark"/>
-
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_review_wrong"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:text="答错×"
-            android:textColor="@android:color/white"
-            android:backgroundTint="@android:color/holo_red_dark"/>
-    </LinearLayout>
-
-    <!--底部：单词列表-->
-    <FrameLayout
+    <!-- 顶部：Fragment 容器（占据除导航栏外的所有空间） -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_margin="16dp"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toTopOf="@id/bottom_nav"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 底部：导航栏 -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_review_buttons">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:menu="@menu/bottom_nav_menu"
+    app:labelVisibilityMode="labeled"/>  <!-- 显示文字标签 -->
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_words"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:listitem="@layout/item_word"/>
-
-        <TextView
-            android:id="@+id/tv_empty"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="暂无单词。请添加"
-            android:textSize="16sp"
-            android:visibility="gone"/>
-    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
