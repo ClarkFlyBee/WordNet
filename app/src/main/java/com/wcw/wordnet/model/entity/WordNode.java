@@ -194,6 +194,18 @@ public class WordNode {
                 ", 新强度:" + this.memoryStrength);
     }
 
+    /**
+     * 根据SM-2质量评分更新记忆强度
+     * @param quality 0-5分（0=忘记, 3=困难, 4=良好, 5=完美）
+     */
+    public void updateMemoryStrengthByQuality(int quality) {
+        // 将SM-2的5分制转换为boolean（>=3算正确）
+        boolean isCorrect = quality >= 3;
+
+        // 使用原有算法更新（保持兼容性）
+        updateMemoryStrength(isCorrect);
+    }
+
     @NonNull
     @Override
     public String toString() {

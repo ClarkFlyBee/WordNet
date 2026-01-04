@@ -138,4 +138,10 @@ public interface WordDao {
      */
     @Query("SELECT * FROM word_nodes WHERE isActive = 1")
     List<WordNode> getAllActiveWordsSync();
+
+    /**
+     * 同步获取单个单词（Repository内部使用）
+     */
+    @Query("SELECT * FROM word_nodes WHERE word = :word LIMIT 1")
+    WordNode getWordByIdSync(String word);  // ✅ 返回直接的 WordNode，不是 LiveData
 }

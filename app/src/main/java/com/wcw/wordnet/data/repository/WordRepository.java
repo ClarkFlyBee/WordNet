@@ -1,6 +1,7 @@
 package com.wcw.wordnet.data.repository;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
@@ -196,10 +197,13 @@ public class WordRepository {
     }
 
     /**
-     * 处理用户复习评分
+     * 处理复习评分（双向更新）
+     * 1. 更新 review_queue 表（计算下次复习时间）
+     * 2. 更新 word_nodes 表（更新记忆强度、复习次数）
+     *
      * @param wordId 单词ID
      * @param quality 评分（0=忘记, 3=困难, 4=良好, 5=完美）
-     * @return Completable，用于ViewModel订阅结果
+     * @return Completable
      */
     public Completable processReview(String wordId, int quality) {
         return Completable.fromAction(() -> {
@@ -209,16 +213,27 @@ public class WordRepository {
                 throw new RuntimeException("未找到复习项: " + wordId);
             }
 
-            // 2. 用SM-2算法计算下次复习时间
+            // 2. 用SM-2算法计算新的复习计划
             ReviewQueue updatedItem = sm2Algorithm.calculateNextReview(item, quality);
 
-            // 3. 更新到数据库
+            // 3. ✅ 更新 review_queue 表
             reviewQueueDao.updateReviewQueue(updatedItem);
 
-            android.util.Log.d("WordRepository",
-                    "单词 '" + wordId + "' 评分: " + quality +
-                            ", 下次复习: " + new java.util.Date(updatedItem.getNextReviewTime()));
-        }).subscribeOn(Schedulers.io());  // 确保在IO线程执行
+            // 4. ✅ 获取原始单词数据
+            WordNode word = wordDao.getWordByIdSync(wordId);
+            if (word == null) {
+                throw new RuntimeException("未找到单词: " + wordId);
+            }
+
+            // 5. ✅ 更新 word_nodes 表（关键！双向同步）
+            word.updateMemoryStrengthByQuality(quality);
+            wordDao.update(word);  // 同步更新数据库
+
+            Log.d("WordRepository",
+                    String.format("✅ 双向更新完成：单词='%s', 评分=%d, 新强度=%.2f, 复习次数=%d, 下次复习=%s",
+                            wordId, quality, word.getMemoryStrength(), word.getReviewCount(),
+                            new java.util.Date(updatedItem.getNextReviewTime())));
+        }).subscribeOn(Schedulers.io());
     }
 
     /**
