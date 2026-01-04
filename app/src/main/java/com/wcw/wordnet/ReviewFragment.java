@@ -14,20 +14,20 @@ import androidx.lifecycle.ViewModelProvider;
 import com.wcw.wordnet.databinding.FragmentReviewBinding;
 
 /**
- * 复习Fragment
- * 职责：展示当前需要复习的单词，提供评估功能
- * 生命周期：用户点击底部"复习"Tab时显示
+ * 复习Fragment（重构后）
+ * 职责：三状态复习流程（回忆→评估→完成）
+ * 状态机：IDLE → RECALLING → EVALUATING → RECALLING → ... → COMPLETED
  */
 public class ReviewFragment extends Fragment {
 
     private WordGraphViewModel viewModel;
     private FragmentReviewBinding binding;
-    private WordNode currentWord;  // 当前正在复习的单词
+    private int reviewedCount = 0;  // 本轮已复习单词数量
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 从Activity获取共享的ViewModel（关键点！）
+        // 从Activity获取共享ViewModel
         viewModel = new ViewModelProvider(requireActivity()).get(WordGraphViewModel.class);
     }
 
@@ -42,81 +42,123 @@ public class ReviewFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1. 观察薄弱词列表，自动加载第一个
-        viewModel.getWeakWords().observe(getViewLifecycleOwner(), words -> {
-            if (words != null && !words.isEmpty()) {
-                loadWordForReview(words.get(0));  // 加载第一个薄弱词
-            } else {
-                showNoWordsMessage();
+        setupClickListeners();
+        setupObservers();
+
+        // 开始复习会话
+        viewModel.startReviewSession();
+    }
+
+    /**
+     * 设置所有按钮点击事件
+     */
+    private void setupClickListeners() {
+        // 回忆状态：显示答案
+        binding.btnShowAnswer.setOnClickListener(v -> {
+            viewModel.showAnswer();
+        });
+
+        // 评估状态：四个评分按钮
+        binding.btnForgot.setOnClickListener(v -> submitReview(0));
+        binding.btnHard.setOnClickListener(v -> submitReview(3));
+        binding.btnGood.setOnClickListener(v -> submitReview(4));
+        binding.btnEasy.setOnClickListener(v -> submitReview(5));
+
+        // 完成状态：返回按钮
+        binding.btnBackToHome.setOnClickListener(v -> {
+            // 返回上一页（通常是MainActivity）
+            requireActivity().getSupportFragmentManager().popBackStack();
+        });
+    }
+
+    /**
+     * 设置LiveData观察
+     */
+    private void setupObservers() {
+        // 1. 观察复习状态变化（核心：驱动三状态切换）
+        viewModel.getReviewState().observe(getViewLifecycleOwner(), state -> {
+            if (state == null) return;
+
+            // 根据状态显示/隐藏对应的View
+            binding.recallView.setVisibility(state == ReviewState.RECALLING ? View.VISIBLE : View.GONE);
+            binding.evaluateView.setVisibility(state == ReviewState.EVALUATING ? View.VISIBLE : View.GONE);
+            binding.scoreButtons.setVisibility(state == ReviewState.EVALUATING ? View.VISIBLE : View.GONE);
+            binding.completedView.setVisibility(state == ReviewState.COMPLETED ? View.VISIBLE : View.GONE);
+
+            // 状态切换动画（可选）
+            if (state == ReviewState.RECALLING) {
+                // 重置评估视图的滚动位置
+                binding.evaluateView.scrollTo(0, 0);
             }
         });
 
-        // 2. 设置评估按钮点击事件
-        binding.btnForgot.setOnClickListener(v -> reviewWord(false, 0.0f));  // 完全不记得
-        binding.btnHard.setOnClickListener(v -> reviewWord(true, 0.3f));     // 模糊，低强度
-        binding.btnEasy.setOnClickListener(v -> reviewWord(true, 0.8f));     // 认识，高强度
+        // 2. 观察当前复习单词
+        viewModel.getCurrentReviewWord().observe(getViewLifecycleOwner(), word -> {
+            if (word != null) {
+                // 更新UI显示
+                binding.tvWord.setText(word.getWord());
+                binding.tvMorphemes.setText(formatMorphemes(word.getMorphemeList()));
+                binding.tvWordAnswer.setText(word.getWord());  // 评估状态也显示
+
+                reviewedCount++;  // 计数器+1
+            }
+        });
+
+        // 3. 观察错误消息
+        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // 4. 观察待复习数量（可选：显示在Toolbar）
+        viewModel.getDueReviewCount().observe(getViewLifecycleOwner(), count -> {
+            // 可以在这里更新Toolbar的小红点或数字
+        });
     }
 
     /**
-     * 加载单词到复习界面
+     * 提交复习评分
+     * @param quality 0=忘记, 3=困难, 4=良好, 5=完美
      */
-    private void loadWordForReview(WordNode word) {
-        this.currentWord = word;
-        binding.tvCurrentWord.setText(word.getWord());
-        binding.tvWordMorphemes.setText("词根：" + formatMorphemes(word.getMorphemeList()));
-        // 隐藏释义（用户需要尝试回忆）
-        binding.tvWordMorphemes.setVisibility(View.GONE);
+    private void submitReview(int quality) {
+        // 显示反馈Toast
+        String feedback = getFeedbackText(quality);
+        Toast.makeText(getContext(), feedback, Toast.LENGTH_SHORT).show();
+
+        // 提交到ViewModel
+        viewModel.submitReview(quality);
     }
 
     /**
-     * 用户评估后提交复习结果
-     * @param isSuccess 是否成功（认识/模糊/不认识）
-     * @param customStrength 自定义强度（模糊=0.3，认识=0.8）
+     * 获取评分反馈文本
      */
-    private void reviewWord(boolean isSuccess, float customStrength) {
-        if (currentWord == null) return;
-
-        // 1. 更新记忆强度
-        if (isSuccess) {
-            currentWord.setMemoryStrength(customStrength);
-        } else {
-            currentWord.setMemoryStrength(0.0f);  // 完全不记得则重置
+    private String getFeedbackText(int quality) {
+        switch (quality) {
+            case 0: return "❌ 忘记 - 会再次复习";
+            case 3: return "🤔 困难 - 加强复习频率";
+            case 4: return "✅ 良好 - 按原计划复习";
+            case 5: return "🌟 完美 - 延长复习间隔";
+            default: return "已记录";
         }
-        currentWord.setReviewCount(currentWord.getReviewCount() + 1);
-        currentWord.setLastReviewed(System.currentTimeMillis());
-
-        // 2. 保存到数据库
-        viewModel.updateWord(currentWord);
-
-        // 3. 显示反馈
-        String message = isSuccess ? (customStrength > 0.5 ? "认识 ✓" : "模糊 ~") : "不认识 ✗";
-        Toast.makeText(getContext(), message + " 下次复习时间已更新", Toast.LENGTH_SHORT).show();
-
-        // 4. 加载下一个单词（延迟500ms，给用户反馈时间）
-        binding.getRoot().postDelayed(() -> {
-            viewModel.getWeakWords().observe(getViewLifecycleOwner(), words -> {
-                if (words != null && !words.isEmpty()) {
-                    loadWordForReview(words.get(0));
-                }
-            });
-        }, 500);
     }
 
+    /**
+     * 格式化词根显示
+     */
     private String formatMorphemes(String morphemeList) {
-        return morphemeList.replace("[", "").replace("]", "").replace("\"", "").replace(",", " + ");
-    }
-
-    private void showNoWordsMessage() {
-        binding.tvCurrentWord.setText("暂无需要复习的单词");
-        binding.tvWordMorphemes.setText("去添加一些新单词吧！");
-        binding.btnForgot.setVisibility(View.GONE);
-        binding.btnHard.setVisibility(View.GONE);
-        binding.btnEasy.setVisibility(View.GONE);
+        if (morphemeList == null || morphemeList.isEmpty()) {
+            return "暂无词根信息";
+        }
+        return morphemeList.replace("[", "")
+                .replace("]", "")
+                .replace("\"", "")
+                .replace(",", " + ");
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;  // 防止内存泄漏
+        binding = null;
     }
 }

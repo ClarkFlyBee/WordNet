@@ -128,4 +128,10 @@ public interface WordDao {
             "WHERE word=:word")
     void softDelete(String word);
 
+    /**
+     * 同步获取所有活跃单词（用于Repository初始化）
+     * 注意：此方法在IO线程调用，不会阻塞主线程
+     */
+    @Query("SELECT * FROM word_nodes WHERE isActive = 1")
+    List<WordNode> getAllActiveWordsSync();
 }

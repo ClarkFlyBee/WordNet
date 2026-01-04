@@ -1,71 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:padding="24dp"
+    android:background="@android:color/white">
 
-    <!-- 顶部：当前复习单词 -->
-    <TextView
-        android:id="@+id/tv_current_word"
-        android:layout_width="wrap_content"
+    <!-- 状态1：回忆中（初始状态） -->
+    <LinearLayout
+        android:id="@+id/recall_view"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="reconstruction"
-        android:textSize="48sp"
-        android:textStyle="bold"
+        android:orientation="vertical"
+        android:visibility="visible"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="64dp"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.3">
 
-    <!-- 中部：词根提示 -->
-    <TextView
-        android:id="@+id/tv_word_morphemes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="词根: re + struct + tion"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/tv_current_word"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="请回忆这个单词的意思"
+            android:textSize="16sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="32dp"/>
+
+        <TextView
+            android:id="@+id/tv_word"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="reconstruction"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/tv_morphemes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="词根：re + struct + tion"
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="64dp"/>
+
+        <Button
+            android:id="@+id/btn_show_answer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="显示答案"
+            android:textSize="16sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/holo_blue_dark"/>
+
+    </LinearLayout>
+
+    <!-- 状态2：评估中（显示答案后） -->
+    <ScrollView
+        android:id="@+id/evaluate_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        app:layout_constraintBottom_toTopOf="@id/score_buttons">
 
-    <!-- 底部：三个评估按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="答案"
+                android:textSize="16sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:id="@+id/tv_word_answer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="reconstruction"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- 可以添加释义、例句等扩展信息 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="释义：重建、改造"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- 状态2：评分按钮 -->
     <LinearLayout
+        android:id="@+id/score_buttons"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="16dp">
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <Button
             android:id="@+id/btn_forgot"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="不认识"
+            android:text="忘记"
+            android:textSize="14sp"
             android:textColor="@android:color/white"
-            android:backgroundTint="@android:color/holo_red_dark"/>
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:layout_marginEnd="4dp"/>
 
         <Button
             android:id="@+id/btn_hard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="模糊"
-            android:textColor="@android:color/black"
-            android:backgroundTint="@android:color/holo_orange_dark"/>
+            android:text="困难"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/holo_orange_dark"
+            android:layout_marginEnd="4dp"/>
+
+        <Button
+            android:id="@+id/btn_good"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="良好"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/holo_blue_dark"
+            android:layout_marginEnd="4dp"/>
 
         <Button
             android:id="@+id/btn_easy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="认识"
+            android:text="完美"
+            android:textSize="14sp"
             android:textColor="@android:color/white"
             android:backgroundTint="@android:color/holo_green_dark"/>
+
     </LinearLayout>
+
+    <!-- 状态3：完成 -->
+    <LinearLayout
+        android:id="@+id/completed_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎉 恭喜！"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/holo_green_dark"
+            android:layout_gravity="center_horizontal"/>
+
+        <TextView
+            android:id="@+id/tv_completion_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="本轮复习完成"
+            android:textSize="16sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="32dp"/>
+
+        <Button
+            android:id="@+id/btn_back_to_home"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="返回主页"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

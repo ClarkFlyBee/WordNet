@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
  * 包含实体：WordNode（单词表）
  */
 
-@Database(entities = {WordNode.class}, version = 1, exportSchema = false)
+@Database(entities = {WordNode.class, ReviewQueue.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     /**
@@ -47,6 +47,8 @@ public abstract class AppDatabase extends RoomDatabase {
      * @return WordDao接口（自动实现）
      */
     public abstract WordDao wordDao();
+
+    public abstract ReviewQueueDao reviewQueueDao();  // 新增DAO
 
     /**
      * 获取数据库单例

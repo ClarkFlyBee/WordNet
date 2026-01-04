@@ -26,6 +26,15 @@ public class WordGraphViewModel extends AndroidViewModel {
     private final WordRepository repository;
     private final CompositeDisposable disposable;   // 用于统一管理在ViewModel创建的所有异步任务
 
+    // ✅ 新增：复习状态LiveData（用于驱动UI状态机）
+    private final MutableLiveData<ReviewState> reviewState = new MutableLiveData<>(ReviewState.IDLE);
+
+    // ✅ 新增：当前复习单词
+    private final MutableLiveData<WordNode> currentReviewWord = new MutableLiveData<>();
+
+    // ✅ 新增：待复习数量（用于显示小红点）
+    private final MutableLiveData<Integer> dueReviewCount = new MutableLiveData<>(0);
+
     /**
      * 薄弱词列表（记忆强度最低的10个）
      * Activity通过observe()订阅，数据变化自动刷新UI
@@ -81,6 +90,9 @@ public class WordGraphViewModel extends AndroidViewModel {
 
         // 初始化 RxJava 订阅池（用于管理所有异步任务）
         this.disposable = new CompositeDisposable();
+
+        // ✅ 新增：加载待复习数量（启动时自动执行）
+        loadDueReviewCount();
 
         /**
          * 搜索条件（可变）
@@ -267,6 +279,119 @@ public class WordGraphViewModel extends AndroidViewModel {
 
     public SingleLiveEvent<Void> getWordReviewedEvent() {
         return wordReviewedEvent;
+    }
+
+    /**
+     * 开始复习会话
+     * 调用后自动加载第一个待复习单词
+     */
+    public void startReviewSession() {
+        reviewState.setValue(ReviewState.RECALLING);
+        loadNextReviewWord();
+    }
+
+    /**
+     * 加载下一个复习单词
+     * 自动从Repository获取最紧急的到期单词
+     */
+    private void loadNextReviewWord() {
+        disposable.add(
+                repository.getNextReviewWord()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                word -> {
+                                    if (word == null) {
+                                        // 没有更多待复习单词
+                                        reviewState.setValue(ReviewState.COMPLETED);
+                                        currentReviewWord.setValue(null);
+                                    } else {
+                                        // 加载成功，更新当前单词
+                                        currentReviewWord.setValue(word);
+                                        // 状态保持RECALLING（由调用者控制）
+                                    }
+                                },
+                                throwable -> {
+                                    Log.e("error", "加载复习单词失败：" + throwable.getMessage());
+                                    errorMessage.setValue("加载复习单词失败：" + throwable.getMessage());
+                                    reviewState.setValue(ReviewState.IDLE);
+                                }
+                        )
+        );
+    }
+
+
+    /**
+     * 用户提交复习评分
+     * @param quality 评分：0=忘记, 3=困难, 4=良好, 5=完美
+     */
+    public void submitReview(int quality) {
+        WordNode word = currentReviewWord.getValue();
+        if (word == null) {
+            errorMessage.setValue("错误：没有正在复习的单词");
+            return;
+        }
+
+        disposable.add(
+                repository.processReview(word.getWord(), quality)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> {
+                                    // ✅ 成功：刷新待复习数量
+                                    loadDueReviewCount();
+
+                                    // ✅ 触发单词已复习事件（供其他Fragment刷新）
+                                    wordReviewedEvent.call();
+
+                                    // ✅ 加载下一个单词
+                                    reviewState.setValue(ReviewState.RECALLING);  // 重置为回忆状态
+                                    loadNextReviewWord();
+                                },
+                                throwable -> {
+                                    errorMessage.setValue("提交复习失败：" + throwable.getMessage());
+                                }
+                        )
+        );
+    }
+
+    /**
+     * 显示答案（从RECALLING切换到EVALUATING状态）
+     */
+    public void showAnswer() {
+        reviewState.setValue(ReviewState.EVALUATING);
+    }
+
+    /**
+     * 加载待复习数量（用于UI显示）
+     */
+    private void loadDueReviewCount() {
+        disposable.add(
+                repository.getDueReviewCount()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                count -> dueReviewCount.setValue(count),
+                                throwable -> android.util.Log.e("ViewModel", "加载待复习数量失败", throwable)
+                        )
+        );
+    }
+
+    /**
+     * 获取待复习数量（供Fragment观察）
+     */
+    public LiveData<Integer> getDueReviewCount() {
+        return dueReviewCount;
+    }
+
+    // ==================== 新增Getter方法 ====================
+
+    public LiveData<ReviewState> getReviewState() {
+        return reviewState;
+    }
+
+    public LiveData<WordNode> getCurrentReviewWord() {
+        return currentReviewWord;
     }
 
     /**
