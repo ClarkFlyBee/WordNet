@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.wcw.wordnet.databinding.FragmentReviewBinding;
 import com.wcw.wordnet.ui.WordGraphViewModel;
+import com.wcw.wordnet.ui.main.MainActivity;
 
 /**
  * 复习Fragment（重构后）
@@ -24,6 +25,9 @@ public class ReviewFragment extends Fragment {
     private WordGraphViewModel viewModel;
     private FragmentReviewBinding binding;
     private int reviewedCount = 0;  // 本轮已复习单词数量
+
+    // ✅ 新增：本轮复习计数器
+    private int sessionReviewedCount = 0;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,6 +46,9 @@ public class ReviewFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // ✅ 在每次会话开始时重置计数器
+        sessionReviewedCount = 0;  // 重置为0
 
         setupClickListeners();
         setupObservers();
@@ -65,10 +72,17 @@ public class ReviewFragment extends Fragment {
         binding.btnGood.setOnClickListener(v -> submitReview(4));
         binding.btnEasy.setOnClickListener(v -> submitReview(5));
 
-        // 完成状态：返回按钮
-        binding.btnBackToHome.setOnClickListener(v -> {
-            // 返回上一页（通常是MainActivity）
-            requireActivity().getSupportFragmentManager().popBackStack();
+        // 完成状态：到单词列表
+        binding.btnViewWords.setOnClickListener(v -> {
+//            requireActivity().getSupportFragmentManager().popBackStack();
+            ((MainActivity) requireActivity()).switchToWordsTab();
+        });
+
+        // 完成状态：到新增模块
+        binding.btnAddNewWord.setOnClickListener(v -> {
+            // 切换到底部导航的"添加"Tab
+            // 需要与 MainActivity 通信，让它切换 BottomNavigationView
+            ((MainActivity) requireActivity()).switchToAddTab();
         });
     }
 
@@ -116,6 +130,11 @@ public class ReviewFragment extends Fragment {
         viewModel.getDueReviewCount().observe(getViewLifecycleOwner(), count -> {
             // 可以在这里更新Toolbar的小红点或数字
         });
+
+        viewModel.getDueReviewCount().observe(getViewLifecycleOwner(), count -> {
+            // 可以在此更新进度，但更简单的做法是：
+            // 在 ViewModel 中维护 sessionTotalCount 变量
+        });
     }
 
     /**
@@ -123,6 +142,14 @@ public class ReviewFragment extends Fragment {
      * @param quality 0=忘记, 3=困难, 4=良好, 5=完美
      */
     private void submitReview(int quality) {
+
+        sessionReviewedCount++;  // 每次提交+1
+
+        // 更新统计文本
+        binding.tvCompletionStats.setText(
+                String.format("本次复习了 %d 个单词", sessionReviewedCount)
+        );
+
         // 显示反馈Toast
         String feedback = getFeedbackText(quality);
         Toast.makeText(getContext(), feedback, Toast.LENGTH_SHORT).show();

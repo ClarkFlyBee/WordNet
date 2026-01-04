@@ -69,4 +69,19 @@ public class MainActivity extends AppCompatActivity {
         return viewModel;
     }
 
+
+    /**
+     * ✅ 供 Fragment 调用的方法：切换到"添加"Tab
+     */
+    public void switchToAddTab() {
+        binding.bottomNav.setSelectedItemId(R.id.addFragment);
+    }
+
+    /**
+     * ✅ 供 Fragment 调用的方法：切换到"单词"Tab
+     */
+    public void switchToWordsTab() {
+        binding.bottomNav.setSelectedItemId(R.id.wordsFragment);
+    }
+
 }

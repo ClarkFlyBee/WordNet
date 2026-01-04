@@ -168,44 +168,83 @@
 
     </LinearLayout>
 
-    <!-- 状态3：完成 -->
+    <!-- 状态3：完成（重新设计） -->
     <LinearLayout
         android:id="@+id/completed_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="gone"
+        android:gravity="center_horizontal"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.3">
 
+        <!-- 庆祝图标 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🎉 恭喜！"
-            android:textSize="32sp"
+            android:text="🎊"
+            android:textSize="64sp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 标题 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="复习完成！"
+            android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@android:color/holo_green_dark"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_marginBottom="8dp"/>
 
+        <!-- 统计信息 -->
         <TextView
             android:id="@+id/tv_completion_stats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="本轮复习完成"
+            android:text="本次复习了 0 个单词"
             android:textSize="16sp"
             android:textColor="@android:color/darker_gray"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="32dp"/>
+            android:layout_marginBottom="48dp"/>
 
-        <Button
-            android:id="@+id/btn_back_to_home"
+        <!-- 操作按钮行 -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="返回主页"
-            android:textSize="16sp"/>
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- 按钮1：查看单词列表 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_view_words"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📋 查看单词"
+                android:textSize="14sp"
+                android:layout_marginEnd="8dp"
+                app:cornerRadius="12dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@android:color/holo_blue_dark"
+                android:textColor="@android:color/holo_blue_dark"
+                android:backgroundTint="@android:color/transparent"/>
+
+            <!-- 按钮2：添加新单词 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_new_word"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="➕ 添加新词"
+                android:textSize="14sp"
+                app:cornerRadius="12dp"
+                android:backgroundTint="@android:color/holo_blue_dark"
+                android:textColor="@android:color/white"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
