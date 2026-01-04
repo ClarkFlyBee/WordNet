@@ -1,4 +1,4 @@
-package com.wcw.wordnet;
+package com.wcw.wordnet.model;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;

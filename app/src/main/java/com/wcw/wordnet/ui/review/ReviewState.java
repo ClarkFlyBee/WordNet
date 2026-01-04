@@ -1,4 +1,4 @@
-package com.wcw.wordnet;
+package com.wcw.wordnet.ui.review;
 
 /**
  * 复习状态机枚举

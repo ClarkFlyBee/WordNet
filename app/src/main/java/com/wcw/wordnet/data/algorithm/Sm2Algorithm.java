@@ -1,4 +1,6 @@
-package com.wcw.wordnet;
+package com.wcw.wordnet.data.algorithm;
+
+import com.wcw.wordnet.model.entity.ReviewQueue;
 
 import java.util.concurrent.TimeUnit;
 

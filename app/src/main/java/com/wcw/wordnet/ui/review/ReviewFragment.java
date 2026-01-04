@@ -1,4 +1,4 @@
-package com.wcw.wordnet;
+package com.wcw.wordnet.ui.review;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.wcw.wordnet.databinding.FragmentReviewBinding;
+import com.wcw.wordnet.ui.WordGraphViewModel;
 
 /**
  * 复习Fragment（重构后）

@@ -1,4 +1,4 @@
-package com.wcw.wordnet;
+package com.wcw.wordnet.ui.words;
 
 
 import android.graphics.Color;
@@ -12,6 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.wcw.wordnet.R;
+import com.wcw.wordnet.model.entity.WordNode;
 
 /**
  * 单词列表适配器

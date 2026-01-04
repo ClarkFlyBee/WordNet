@@ -1,4 +1,4 @@
-package com.wcw.wordnet;
+package com.wcw.wordnet.model.entity;
 
 
 import android.util.Log;

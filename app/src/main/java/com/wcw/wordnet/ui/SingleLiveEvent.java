@@ -1,4 +1,4 @@
-package com.wcw.wordnet;
+package com.wcw.wordnet.ui;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;

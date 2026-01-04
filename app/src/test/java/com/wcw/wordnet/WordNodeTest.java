@@ -3,6 +3,8 @@ package com.wcw.wordnet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.wcw.wordnet.model.entity.WordNode;
+
 import org.junit.Test;
 
 public class WordNodeTest {

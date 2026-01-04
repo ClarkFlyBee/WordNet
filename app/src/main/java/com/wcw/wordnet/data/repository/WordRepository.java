@@ -1,8 +1,16 @@
-package com.wcw.wordnet;
+package com.wcw.wordnet.data.repository;
 
 import android.app.Application;
 
 import androidx.lifecycle.LiveData;
+
+import com.wcw.wordnet.data.algorithm.Sm2Algorithm;
+import com.wcw.wordnet.data.local.dao.ReviewQueueDao;
+import com.wcw.wordnet.data.local.dao.WordDao;
+import com.wcw.wordnet.data.local.database.AppDatabase;
+import com.wcw.wordnet.model.RootStatistic;
+import com.wcw.wordnet.model.entity.ReviewQueue;
+import com.wcw.wordnet.model.entity.WordNode;
 
 import java.util.List;
 

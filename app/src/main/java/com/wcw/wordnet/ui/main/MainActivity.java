@@ -1,20 +1,16 @@
-package com.wcw.wordnet;
+package com.wcw.wordnet.ui.main;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.wcw.wordnet.R;
 import com.wcw.wordnet.databinding.ActivityMainBinding;
-
-import java.util.List;
+import com.wcw.wordnet.ui.WordGraphViewModel;
 
 /**
  * 主Activity（重构后：纯导航容器）
