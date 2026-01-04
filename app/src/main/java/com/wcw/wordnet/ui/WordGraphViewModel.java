@@ -403,27 +403,15 @@ public class WordGraphViewModel extends AndroidViewModel {
         return currentReviewWord;
     }
 
+
     /**
-     * ✅ 供 Fragment 调用的同步重置方法（调试用）
-     * 重置所有单词的复习时间为"现在"
+     * 获取单个单词的 LiveData（供详情页使用）
+     * @param word 单词字符串
+     * @return LiveData<WordNode>
      */
-    // 相关方法没有完整实现，本部分对应功能见 Fragment
-//    public Completable resetReviewQueueForTesting() {
-//        return Completable.fromAction(() -> {
-//            // 获取DAO（通过Repository或直接通过Database）
-//            ReviewQueueDao queueDao = repository.getReviewQueueDao();  // 需要Repository提供get方法
-//            WordDao wordDao = repository.getWordDao();  // 需要Repository提供get方法
-//
-//            // 获取所有复习项
-//            List<ReviewQueue> allItems = queueDao.getAllReviewQueuesSync();
-//
-//            // 重置时间为现在
-//            for (ReviewQueue item : allItems) {
-//                item.setNextReviewTime(System.currentTimeMillis());
-//                queueDao.updateReviewQueue(item);
-//            }
-//        }).subscribeOn(Schedulers.io());
-//    }
+    public LiveData<WordNode> getWordById(String word) {
+        return repository.getWordByIdLiveData(word);
+    }
 
     /**
      * ViewModel 销毁时调用（系统自动）

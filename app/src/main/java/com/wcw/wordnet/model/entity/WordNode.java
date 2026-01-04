@@ -8,6 +8,9 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 单词节点实体类
  */
@@ -204,6 +207,34 @@ public class WordNode {
 
         // 使用原有算法更新（保持兼容性）
         updateMemoryStrength(isCorrect);
+    }
+
+    /**
+     * 解析词根列表字符串为 MorphemeRelation 对象
+     * 示例：["re","struct","tion"] → 三个 MorphemeRelation
+     */
+    public List<MorphemeRelation> parseMorphemeRelations() {
+        List<MorphemeRelation> relations = new ArrayList<>();
+
+        try {
+            // 移除括号
+            String clean = this.morphemeList.replace("[", "").replace("]", "");
+            // 按逗号分割
+            String[] parts = clean.split(",");
+
+            for (int i = 0; i < parts.length; i++) {
+                String morpheme = parts[i].trim().replace("\"", "");
+                if (!morpheme.isEmpty()) {
+                    // 简单判断位置（实际应用中需要更复杂的词根库）
+                    int position = i == 0 ? 0 : (i == parts.length - 1 ? 2 : 1);
+                    relations.add(new MorphemeRelation(morpheme, this.word, position));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return relations;
     }
 
     @NonNull

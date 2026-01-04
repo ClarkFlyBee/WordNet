@@ -9,11 +9,14 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import com.wcw.wordnet.data.local.dao.MorphemeDao;
 import com.wcw.wordnet.data.local.dao.ReviewQueueDao;
 import com.wcw.wordnet.data.local.dao.WordDao;
+import com.wcw.wordnet.model.entity.MorphemeRelation;
 import com.wcw.wordnet.model.entity.ReviewQueue;
 import com.wcw.wordnet.model.entity.WordNode;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,7 +27,14 @@ import java.util.concurrent.Executors;
  * 包含实体：WordNode（单词表）
  */
 
-@Database(entities = {WordNode.class, ReviewQueue.class}, version = 2, exportSchema = false)
+@Database(
+        entities = {
+                WordNode.class,
+                ReviewQueue.class,
+                MorphemeRelation.class
+        },
+        version = 3,
+        exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     /**
@@ -52,6 +62,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract WordDao wordDao();
 
     public abstract ReviewQueueDao reviewQueueDao();  // 新增DAO
+    public abstract MorphemeDao morphemeDao();
 
     /**
      * 获取数据库单例
@@ -90,7 +101,8 @@ public abstract class AppDatabase extends RoomDatabase {
             // 在后台线程预填充数据
             databaseWriteExecutor.execute(() -> {
                 // 获取DAO实例
-                WordDao dao = INSTANCE.wordDao();
+                WordDao wordDao = INSTANCE.wordDao();
+                MorphemeDao morphemeDao = INSTANCE.morphemeDao();
 
                 // 插入6个示范单词
                 WordNode[] defaultWords = {
@@ -112,10 +124,21 @@ public abstract class AppDatabase extends RoomDatabase {
 
                 // 插入数据库
                 for (WordNode word : defaultWords) {
-                    dao.insert(word);
+                    wordDao.insert(word);
                 }
 
                 Log.d("AppDatabase", "默认数据插入完成");
+
+
+                // ✅ 为每个单词生成词根关系
+                for (WordNode word : defaultWords) {
+                    // 解析词根
+                    List<MorphemeRelation> relations = word.parseMorphemeRelations();
+                    // 插入数据库
+                    morphemeDao.insertAll(relations);
+                }
+
+                Log.d("AppDatabase", "✅ 词根关系已生成");
             });
         }
 

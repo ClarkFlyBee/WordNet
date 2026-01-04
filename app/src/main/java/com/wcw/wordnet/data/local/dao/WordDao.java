@@ -144,4 +144,12 @@ public interface WordDao {
      */
     @Query("SELECT * FROM word_nodes WHERE word = :word LIMIT 1")
     WordNode getWordByIdSync(String word);  // ✅ 返回直接的 WordNode，不是 LiveData
+
+    /**
+     * 获取单个单词的 LiveData（供详情页观察）
+     * @param word 单词字符串
+     * @return LiveData包装的 WordNode
+     */
+    @Query("SELECT * FROM word_nodes WHERE word = :word LIMIT 1")
+    LiveData<WordNode> getWordByIdLiveData(String word);
 }

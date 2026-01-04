@@ -1,6 +1,7 @@
 package com.wcw.wordnet.ui.words;
 
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.wcw.wordnet.R;
 import com.wcw.wordnet.model.entity.WordNode;
+import com.wcw.wordnet.ui.worddetail.WordDetailActivity;
 
 /**
  * 单词列表适配器
@@ -80,6 +82,14 @@ public class WordAdapter extends ListAdapter<WordNode, WordAdapter.WordViewHolde
             notifyDataSetChanged();
             Log.d("DebugSelect", "用户选中: " + word.getWord());
         });
+
+        holder.itemView.setOnClickListener(v -> {
+            // 启动 WordDetailActivity
+            Intent intent = new Intent(v.getContext(), WordDetailActivity.class);
+            intent.putExtra("WORD", word.getWord());
+            v.getContext().startActivity(intent);
+        });
+
     }
 
     /**

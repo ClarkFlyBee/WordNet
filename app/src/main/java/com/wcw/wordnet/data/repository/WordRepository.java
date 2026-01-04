@@ -255,4 +255,10 @@ public class WordRepository {
         }).subscribeOn(Schedulers.io());
     }
 
+    /**
+     * 获取单个单词的 LiveData
+     */
+    public LiveData<WordNode> getWordByIdLiveData(String word) {
+        return wordDao.getWordByIdLiveData(word);
+    }
 }
