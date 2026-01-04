@@ -12,6 +12,7 @@ import com.wcw.wordnet.model.entity.WordNode;
 
 import java.util.List;
 
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 
 /**
@@ -67,7 +68,7 @@ public interface ReviewQueueDao {
             "WHERE q.next_review_time <= :currentTime " +
             "AND w.isActive = 1 " +
             "ORDER BY q.next_review_time ASC LIMIT 1")
-    Single<WordNode> getNextDueWord(long currentTime);
+    Maybe<WordNode> getNextDueWord(long currentTime);
 
     /**
      * 获取多个到期的复习单词（用于批量加载，提高性能）

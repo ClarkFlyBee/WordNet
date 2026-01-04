@@ -304,20 +304,22 @@ public class WordGraphViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 word -> {
-                                    if (word == null) {
-                                        // 没有更多待复习单词
-                                        reviewState.setValue(ReviewState.COMPLETED);
-                                        currentReviewWord.setValue(null);
-                                    } else {
-                                        // 加载成功，更新当前单词
+                                    // ✅ onSuccess：成功拿到单词
+                                    if (word != null) {
                                         currentReviewWord.setValue(word);
-                                        // 状态保持RECALLING（由调用者控制）
+                                        // 状态保持 RECALLING（由调用者设置）
                                     }
                                 },
                                 throwable -> {
-                                    Log.e("error", "加载复习单词失败：" + throwable.getMessage());
+                                    // ✅ onError：发生错误
                                     errorMessage.setValue("加载复习单词失败：" + throwable.getMessage());
                                     reviewState.setValue(ReviewState.IDLE);
+                                },
+                                // ✅ onComplete：这是 Maybe 特有的！表示没有数据
+                                () -> {
+                                    // 没有更多到期单词，进入完成状态
+                                    reviewState.setValue(ReviewState.COMPLETED);
+                                    currentReviewWord.setValue(null);
                                 }
                         )
         );

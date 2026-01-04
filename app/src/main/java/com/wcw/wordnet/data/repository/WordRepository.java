@@ -15,6 +15,7 @@ import com.wcw.wordnet.model.entity.WordNode;
 import java.util.List;
 
 import io.reactivex.Completable;    // 异步操作完成状态
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -190,7 +191,7 @@ public class WordRepository {
      * 获取下一个需要复习的单词（自动推送最紧急的）
      * @return LiveData包装的WordNode，自动响应数据变化
      */
-    public Single<WordNode> getNextReviewWord() {
+    public Maybe<WordNode> getNextReviewWord() {
         return reviewQueueDao.getNextDueWord(System.currentTimeMillis());
     }
 
