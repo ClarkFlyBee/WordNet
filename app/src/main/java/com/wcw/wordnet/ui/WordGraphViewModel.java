@@ -136,8 +136,9 @@ public class WordGraphViewModel extends AndroidViewModel {
      * 添加新单词
      * 流程：校验→插入→通知UI
      * @param word 用户输入的单词字符串
+     *        chineseMeaning 输入的中文含义
      */
-    public void addWord(String word){
+    public void addWord(String word, String chineseMeaning){
         // 1. 输入校验（主线程，快速操作）
         if (word == null || word.trim().isEmpty()){
             errorMessage.setValue("单词不能为空");
@@ -154,6 +155,7 @@ public class WordGraphViewModel extends AndroidViewModel {
         WordNode newWord = new WordNode(word.trim().toLowerCase());
         // 默认使用单词本身作为词根（后续可自动拆解）
         newWord.setMorphemeList("[\"" + word + "\"]");
+        newWord.setChineseMeaning(chineseMeaning != null ? chineseMeaning.trim() : "");
 
         // 3. 调用 Repository 异步插入（后台线程）
         disposable.add(

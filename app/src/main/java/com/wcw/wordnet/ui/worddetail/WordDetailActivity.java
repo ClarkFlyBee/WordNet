@@ -46,6 +46,8 @@ public class WordDetailActivity extends AppCompatActivity {
                 binding.tvWord.setText(wordNode.getWord());
                 binding.tvMorphemes.setText(wordNode.getMorphemeList());
                 binding.tvMemoryStrength.setText(String.format("掌握度: %.0f%%", wordNode.getMemoryStrength() * 100));
+                String chinese = wordNode.getChineseMeaning();
+                binding.tvChinese.setText(chinese != null && !chinese.isEmpty() ? chinese : "暂无中文释义");
 
                 // 加载词根关系
                 loadMorphemeGraph(wordNode);

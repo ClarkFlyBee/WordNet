@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.wcw.wordnet.data.local.dao.MorphemeDao;
@@ -33,7 +34,7 @@ import java.util.concurrent.Executors;
                 ReviewQueue.class,
                 MorphemeRelation.class
         },
-        version = 3,
+        version = 4,
         exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -55,6 +56,8 @@ public abstract class AppDatabase extends RoomDatabase {
      */
     private static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(4);
 
+    private static Context appContext; // 新增静态Context字段
+
     /**
      * 获取DAO实例
      * @return WordDao接口（自动实现）
@@ -64,6 +67,14 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract ReviewQueueDao reviewQueueDao();  // 新增DAO
     public abstract MorphemeDao morphemeDao();
 
+    private static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // 添加新列，默认值为空字符串
+            database.execSQL("ALTER TABLE word_nodes ADD COLUMN chineseMeaning TEXT NOT NULL DEFAULT ''");
+        }
+    };
+
     /**
      * 获取数据库单例
      * 双重检查锁定（Double-Checked Locking）模式，兼顾性能和线程安全
@@ -71,6 +82,12 @@ public abstract class AppDatabase extends RoomDatabase {
      * @return AppDatabase实例
      */
     public static AppDatabase getDatabase(final Context context){
+
+        // 在首次调用时保存Application Context
+        if (appContext == null) {
+            appContext = context.getApplicationContext();
+        }
+
         // 第一次检查（无锁，快速路径）
         if (INSTANCE == null) {
             // synchronized 是 Java 的线程同步关键字，同一时间只允许一个线程进入被锁住的代码块
@@ -83,6 +100,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class, DATABASE_NAME)
                             // 数据库创建回调
                             .addCallback(roomCallback)
+                            .addMigrations(MIGRATION_3_4)
                             .build();
                 }
             }
@@ -98,47 +116,13 @@ public abstract class AppDatabase extends RoomDatabase {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate(db);
-            // 在后台线程预填充数据
             databaseWriteExecutor.execute(() -> {
-                // 获取DAO实例
                 WordDao wordDao = INSTANCE.wordDao();
                 MorphemeDao morphemeDao = INSTANCE.morphemeDao();
-
-                // 插入6个示范单词
-                WordNode[] defaultWords = {
-                        new WordNode("reconstruction"),
-                        new WordNode("unpredictability"),
-                        new WordNode("structure"),
-                        new WordNode("dictionary"),
-                        new WordNode("preview"),
-                        new WordNode("construction")
-                };
-
-                // 设置词根
-                defaultWords[0].setMorphemeList("[\"re\",\"struct\",\"tion\"]");
-                defaultWords[1].setMorphemeList("[\"un\",\"pre\",\"dict\",\"ability\"]");
-                defaultWords[2].setMorphemeList("[\"struct\",\"ure\"]");
-                defaultWords[3].setMorphemeList("[\"dict\",\"ion\",\"ary\"]");
-                defaultWords[4].setMorphemeList("[\"pre\",\"view\"]");
-                defaultWords[5].setMorphemeList("[\"con\",\"struct\",\"tion\"]");
-
-                // 插入数据库
-                for (WordNode word : defaultWords) {
-                    wordDao.insert(word);
+                // ✅ 使用静态存储的appContext，不再从db获取
+                if (!DataInitializer.isAlreadyInitialized(wordDao)) {
+                    DataInitializer.initialize(appContext, wordDao, morphemeDao).subscribe();
                 }
-
-                Log.d("AppDatabase", "默认数据插入完成");
-
-
-                // ✅ 为每个单词生成词根关系
-                for (WordNode word : defaultWords) {
-                    // 解析词根
-                    List<MorphemeRelation> relations = word.parseMorphemeRelations();
-                    // 插入数据库
-                    morphemeDao.insertAll(relations);
-                }
-
-                Log.d("AppDatabase", "✅ 词根关系已生成");
             });
         }
 

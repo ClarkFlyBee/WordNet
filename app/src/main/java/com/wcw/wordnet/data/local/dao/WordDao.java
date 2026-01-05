@@ -152,4 +152,7 @@ public interface WordDao {
      */
     @Query("SELECT * FROM word_nodes WHERE word = :word LIMIT 1")
     LiveData<WordNode> getWordByIdLiveData(String word);
+
+    @Query("SELECT COUNT(*) FROM word_nodes")
+    int getWordCountSync();  // ✅ 同步方法，直接返回 int
 }

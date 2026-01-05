@@ -56,6 +56,11 @@ public class WordNode {
     private String morphemeList;
 
     /**
+     * 中文释义
+     */
+    private String chineseMeaning;
+
+    /**
      * Room要求实体类包含无参构造函数
      */
     public WordNode(){
@@ -94,6 +99,13 @@ public class WordNode {
         this.reviewCount = 0;
         this.isActive = true;
         this.morphemeList = "[]";
+    }
+
+    @Ignore
+    public WordNode(@NonNull String word, String chineseMeaning, List<String> morphemes) {
+        this(word);
+        this.chineseMeaning = chineseMeaning;
+        this.morphemeList = morphemes.toString();
     }
 
     @NonNull
@@ -144,6 +156,14 @@ public class WordNode {
 
     public void setMorphemeList(String morphemeList) {
         this.morphemeList = morphemeList;
+    }
+
+    public String getChineseMeaning() {
+        return chineseMeaning;
+    }
+
+    public void setChineseMeaning(String chineseMeaning) {
+        this.chineseMeaning = chineseMeaning;
     }
 
     /**

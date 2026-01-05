@@ -1,0 +1,34 @@
+{
+  "words": [
+    {
+      "word": "reconstruction",
+      "chinese": "重建、改造",
+      "morphemes": ["re", "struct", "tion"]
+    },
+    {
+      "word": "unpredictability",
+      "chinese": "不可预测性",
+      "morphemes": ["un", "pre", "dict", "ability"]
+    },
+    {
+      "word": "structure",
+      "chinese": "结构、构造",
+      "morphemes": ["struct", "ure"]
+    },
+    {
+      "word": "dictionary",
+      "chinese": "字典、词典",
+      "morphemes": ["dict", "ion", "ary"]
+    },
+    {
+      "word": "preview",
+      "chinese": "预览、预习",
+      "morphemes": ["pre", "view"]
+    },
+    {
+      "word": "construction",
+      "chinese": "建设、施工",
+      "morphemes": ["con", "struct", "tion"]
+    }
+  ]
+}

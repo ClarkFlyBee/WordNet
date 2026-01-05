@@ -106,6 +106,7 @@ public class WordAdapter extends ListAdapter<WordNode, WordAdapter.WordViewHolde
         private final TextView tvMorphemes;
         private final TextView tvStrength;
         private final View itemView;
+        private final TextView tvChinese;
 
         public WordViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -113,6 +114,7 @@ public class WordAdapter extends ListAdapter<WordNode, WordAdapter.WordViewHolde
             tvWord = itemView.findViewById(R.id.tv_word);
             tvMorphemes = itemView.findViewById(R.id.tv_morphemes);
             tvStrength = itemView.findViewById(R.id.tv_strength);
+            tvChinese = itemView.findViewById(R.id.tv_chinese);
         }
 
         public void bind(WordNode word){
@@ -126,6 +128,16 @@ public class WordAdapter extends ListAdapter<WordNode, WordAdapter.WordViewHolde
             // 根据掌握度设置背景色（绿色=熟，红色=生）
             int color = getColorByStrength(word.getMemoryStrength());
             itemView.setBackgroundColor(color);
+
+            // ✅ 绑定中文释义
+            String chinese = word.getChineseMeaning();
+            if (chinese == null || chinese.isEmpty()) {
+                tvChinese.setText("暂无释义");
+                tvChinese.setTextColor(Color.GRAY);
+            } else {
+                tvChinese.setText(chinese);
+                tvChinese.setTextColor(Color.BLACK);
+            }
         }
 
         private String formatMorphemes(String morphemeList){

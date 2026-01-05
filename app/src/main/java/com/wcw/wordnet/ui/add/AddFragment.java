@@ -43,9 +43,11 @@ public class AddFragment extends Fragment {
 
         binding.btnConfirmAdd.setOnClickListener(v -> {
             String word = binding.etNewWord.getText().toString().trim();
+            String chinese = binding.etChineseMeaning.getText().toString().trim();  // 获取中文
             if (!word.isEmpty()) {
-                viewModel.addWord(word);
+                viewModel.addWord(word, chinese);
                 binding.etNewWord.setText("");
+                binding.etChineseMeaning.setText("");   // 清空中文输入框
                 Toast.makeText(getContext(), "添加成功", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getContext(), "单词不能为空", Toast.LENGTH_SHORT).show();

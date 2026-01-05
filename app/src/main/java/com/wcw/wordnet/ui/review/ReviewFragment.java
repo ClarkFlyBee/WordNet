@@ -157,6 +157,11 @@ public class ReviewFragment extends Fragment {
                 binding.tvMorphemes.setText(formatMorphemes(word.getMorphemeList()));
                 binding.tvWordAnswer.setText(word.getWord());  // 评估状态也显示
 
+                // ✅ 显示中文（评估状态）
+                String chinese = word.getChineseMeaning();
+                binding.tvChineseAnswer.setText(chinese != null && !chinese.isEmpty() ?
+                        "中文：" + chinese : "中文：暂无释义");
+
                 reviewedCount++;  // 计数器+1
             }
         });

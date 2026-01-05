@@ -97,13 +97,13 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="8dp"/>
 
-            <!-- 可以添加释义、例句等扩展信息 -->
             <TextView
+                android:id="@+id/tv_chinese_answer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="释义：重建、改造"
-                android:textSize="14sp"
-                android:textColor="@android:color/darker_gray"
+                android:text="中文：重建、改造"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"/>
 
