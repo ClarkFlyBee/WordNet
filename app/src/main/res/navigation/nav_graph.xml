@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/reviewFragment">  <!--启动时显示的Fragment-->
+    app:startDestination="@id/wordsFragment">  <!--启动时显示的Fragment-->
 
     <!-- 复习Fragment（启动页） -->
     <fragment
