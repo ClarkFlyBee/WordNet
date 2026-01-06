@@ -113,10 +113,7 @@ public class WordGraphViewModel extends AndroidViewModel {
         this.wordsByRoot =
                 Transformations.switchMap(rootQuery, root -> {
                     if (root == null || root.trim().isEmpty()) {
-                        // 返回空的 MutableLiveData（值为 null）
-                        MutableLiveData<List<WordNode>> empty = new MutableLiveData<>();
-                        empty.setValue(null);
-                        return empty;     // 空数据
+                        return repository.getAllActiveWords();
                     }
                     return repository.getWordsByRoot(root.trim());
                 });
