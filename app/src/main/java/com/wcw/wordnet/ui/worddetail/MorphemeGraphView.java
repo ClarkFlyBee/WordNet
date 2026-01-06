@@ -25,6 +25,14 @@ public class MorphemeGraphView extends View {
     private Paint linePaint;
     private Paint textPaint;
 
+    // 不同类型词根的画笔
+    private Paint prefixPaint;   // 前缀（紫色）
+    private Paint rootPaint;     // 词根（蓝色）
+    private Paint suffixPaint;   // 后缀（绿色）
+
+    private Paint positionPaint;
+    private Paint positionTextPaint;
+
     private List<MorphemeRelation> relations = new ArrayList<>();
     private Map<String, PointF> nodePositions = new HashMap<>();
     private String centerWord;
@@ -60,6 +68,32 @@ public class MorphemeGraphView extends View {
         textPaint.setColor(0xFF000000);
         textPaint.setTextSize(40f);
         textPaint.setTextAlign(Paint.Align.CENTER);
+
+        // 前缀（在单词前）
+        prefixPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        prefixPaint.setColor(0xFF9C27B0);  // 紫色
+        prefixPaint.setStyle(Paint.Style.FILL);
+
+        // 词根（核心含义）
+        rootPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        rootPaint.setColor(0xFF2196F3);    // 蓝色
+        rootPaint.setStyle(Paint.Style.FILL);
+
+        // 后缀（在单词后）
+        suffixPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        suffixPaint.setColor(0xFF4CAF50);  // 绿色
+        suffixPaint.setStyle(Paint.Style.FILL);
+
+        // 位置标签背景
+        positionPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        positionPaint.setColor(0x55000000);  // 半透明黑色
+        positionPaint.setStyle(Paint.Style.FILL);
+
+        // 位置标签文字
+        positionTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        positionTextPaint.setColor(0xFFFFFFFF);  // 白色
+        positionTextPaint.setTextSize(24f);
+        positionTextPaint.setTextAlign(Paint.Align.CENTER);
     }
 
     /**
@@ -88,7 +122,7 @@ public class MorphemeGraphView extends View {
 
         // 词根围绕中心单词
         int count = relations.size();
-        float radius = Math.min(width, height) * 0.3f;
+        float radius = Math.min(width, height) * 0.4f;
 
         for (int i = 0; i < count; i++) {
             MorphemeRelation relation = relations.get(i);
@@ -118,8 +152,15 @@ public class MorphemeGraphView extends View {
         for (MorphemeRelation relation : relations) {
             PointF pos = nodePositions.get(relation.getMorpheme());
             if (pos != null) {
-                canvas.drawCircle(pos.x, pos.y, 60f, morphemePaint);
+                // 根据 position 选择画笔
+                Paint nodePaint = getPaintByPosition(relation.getPosition());
+                canvas.drawCircle(pos.x, pos.y, 60f, nodePaint);
+
+                // 绘制词根文字
                 canvas.drawText(relation.getMorpheme(), pos.x, pos.y + 15f, textPaint);
+
+                // ✅ 绘制位置标签（前缀/词根/后缀）
+                drawPositionLabel(canvas, relation.getPosition(), pos.x, pos.y - 80f);
             }
         }
 
@@ -133,6 +174,35 @@ public class MorphemeGraphView extends View {
             );
             canvas.drawText(centerWord, wordPos.x, wordPos.y + 15f, textPaint);
         }
+    }
+
+    private Paint getPaintByPosition(int position) {
+        switch (position) {
+            case 0: return prefixPaint;  // 前缀
+            case 1: return rootPaint;    // 词根
+            case 2: return suffixPaint;  // 后缀
+            default: return rootPaint;   // 默认
+        }
+    }
+
+    private void drawPositionLabel(Canvas canvas, int position, float x, float y) {
+        String label;
+        switch (position) {
+            case 0: label = "前缀"; break;
+            case 1: label = "词根"; break;
+            case 2: label = "后缀"; break;
+            default: label = "未知"; break;
+        }
+        // 绘制标签背景（圆角矩形）
+        float labelWidth = positionTextPaint.measureText(label);
+        canvas.drawRoundRect(
+                x - labelWidth/2 - 10f, y - 15f,
+                x + labelWidth/2 + 10f, y + 15f,
+                20f, 20f, positionPaint
+        );
+
+        // 绘制标签文字
+        canvas.drawText(label, x, y + 8f, positionTextPaint);
     }
 
     @Override
